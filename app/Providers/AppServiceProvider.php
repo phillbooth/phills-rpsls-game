@@ -2,16 +2,17 @@
 
 namespace App\Providers;
 
+namespace App\Providers;
+
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
+    public function register()
     {
-        //
+        $this->app->bind(App\Games\RPSLSGame::class, function ($app) {
+            return new App\Games\RPSLSGame();
+        });
     }
 
     /**
@@ -19,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \App\Console\Commands\PlayGame::class,
+            ]);
+        }
     }
 }

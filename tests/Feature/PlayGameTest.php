@@ -2,27 +2,34 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Games\RPSLSGame;
+use Mockery;
 use Tests\TestCase;
 
 class PlayGameTest extends TestCase
 {
     /**
-     * Test the PlayGame command with all possible choices.
+     * Test the play game command.
      *
      * @return void
      */
     public function testPlayGameCommand()
     {
-        // Define all possible choices
+        $mock = Mockery::mock(RPSLSGame::class);
+        $mock->shouldReceive('getRandomChoice')->andReturn('rock');
+        $mock->shouldReceive('compareChoices')->andReturn(['result' => 'Computer wins!']);
+        $mock->shouldReceive('getKillMessage')->andReturn('');
+
+        $this->app->instance(RPSLSGame::class, $mock);
+
         $choices = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
 
-        // Loop through each choice and run the command
         foreach ($choices as $choice) {
-            $output = $this->artisan("game:rpsls $choice");
-
-            // Assert that the command ran successfully
-            $output->assertExitCode(0);
+            $this->artisan("game:rpsls $choice")
+                ->assertExitCode(0)
+                ->expectsOutput("Your choice: $choice")
+                ->expectsOutput("Computer's choice: rock")
+                ->run();
         }
     }
 }
